@@ -1,0 +1,60 @@
+{
+  "name": "require-handlebars-plugin",
+  "version": "0.8.1",
+  "author": {
+    "name": "Alex Sexton",
+    "email": "alexsexton@gmail.com"
+  },
+  "description": "A plugin for handlebars in require.js",
+  "repository": {
+    "type": "git",
+    "url": "https://SlexAxton@github.com/SlexAxton/require-handlebars-plugin.git"
+  },
+  "license": "To Use: WTFPL, To Contribute: Dojo CLA",
+  "main": "hbs",
+  "volo": {
+    "type": "directory",
+    "dependencies": {
+      "Handlebars": "https://raw.github.com/SlexAxton/require-handlebars-plugin/master/Handlebars.js"
+    }
+  },
+  "jam": {
+    "name": "hbs",
+    "dependencies": {
+      "Handlebars": null
+    }
+  },
+  "scripts": {
+    "test": "node_modules/karma/bin/karma start --singleRun"
+  },
+  "contributors": [
+    {
+      "name": "Xavier Damman",
+      "email": "xdamman@gmail.com"
+    }
+  ],
+  "devDependencies": {
+    "karma-script-launcher": "~0.1.0",
+    "karma-chrome-launcher": "~0.1.1",
+    "karma-html2js-preprocessor": "~0.1.0",
+    "karma-firefox-launcher": "~0.1.2",
+    "karma-jasmine": "~0.1.4",
+    "requirejs": "~2.1.9",
+    "karma-requirejs": "~0.2.0",
+    "karma-coffee-preprocessor": "~0.1.1",
+    "karma-phantomjs-launcher": "~0.1.1",
+    "karma": "~0.10.8",
+    "mocha": "~1.15.1",
+    "karma-mocha": "~0.1.1",
+    "karma-chai": "0.0.2",
+    "karma-cajon": "0.0.1"
+  },
+  "readme": "# Require.js Handlebars Plugin\n\n## Version\n\nHandlebars : `v1.3.0`\n\nhbs.js     : `v0.8.1`\n\n## Requirements\n\nShould work in both the java and node build environments.\n\nRequire.js >= 2.1.x (The last tag to work for Require < 2.1 is the `0.3.3` tag)\n\n## Usage\n\nWrite a template ( path: `App/Template/One.hbs` ):\n\n```html\n<div class=\"best plugin ever\">\n  This is my {{ adjective }} template.\n\n  {{! To include a partial: }}\n  {{! just provide the path to the partial without the extension }}\n\n  {{> App/Template/CoolPartial }}\n\n  {{! the path can also be relative to the current template: }}\n  {{> ./coolPartial }}\n</div>\n```\n\nHere's the partial (optional) ( path : `App/Template/CoolPartial.hbs` )\n\n```html\n<div>\n  {{! This can obviously have it's own partials, etc, etc }}\n  I am a partial\n</div>\n```\n\n## Installation\nClone this repo or use `bower` to add `require-handlebars-plugin` to your project (typically in you `lib/` directory) and make sure you tell `requirejs` about the new `hbs` plugin by editing your `requirejs.conf.js` file (you can also pass a few options):\n\n    require.config({\n    \tpaths: {\n    \t\thbs: 'lib/require-handlebars-plugin/hbs'\n    \t},\n    \thbs: { // optional\n    \t\thelpers: true,            // default: true\n    \t\ti18n: false,              // default: false\n    \t\ttemplateExtension: 'hbs', // default: 'hbs'\n    \t\tpartialsUrl: ''           // default: ''\n\t\t}\n    });\n\n`partialsUrl`: base url for loading partials so that you don't have to provide the full path every time you need to load a partial within a template.\n\n\nThen require your templates like so:\n\n```javascript\nrequire(['hbs!App/Template/One'], function ( tmplOne ) {\n  // Use whatever you would to render the template function\n  document.body.innerHTML = tmplOne({adjective: \"favorite\"});\n});\n```\n\n\nAnd then the output into your body would be as follows:\n\n```html\n<div class=\"best plugin ever\">\n  This is my favorite template.\n\n  <div>\n    I am a partial\n  </div>\n</div>\n\n```\n\nYAY!\n\n# i18n\n\nI don't think this lib is a good place to couple i18n. There are some legacy features still there,\nbut I think ideas like this one are better: [https://github.com/slexaxton/mfbars](https://github.com/slexaxton/mfbars)\n\n# Helpers\n\nJust put your helpers in `templates/helpers/*` and they'll automagically get pulled in as long as you write them as modules.\n\nI find that many helpers are good helpers in regular code as well, so the following is a good practice:\n\n```javascript\ndefine('templates/helpers/roundNumber', ['hbs/handlebars'], function ( Handlebars ) {\n  function roundNumber ( context, options ) {\n    // Simple function for example\n    return Math.round( context );\n  }\n  Handlebars.registerHelper( 'roundNumber', roundNumber );\n  return roundNumber;\n});\n```\n\nThen in your templates, you can just do:\n\n```mustache\n{{roundNumber Data.ThreeFourths}}\n```\n\nThe system will make sure these modules are pulled in automatically from that directory. But if in your app, you need a rounding module (perhaps in a view/datanormalization place), you could do this:\n\n```javascript\nrequire(['templates/helpers/roundNumber'], function ( roundNumber ) {\n  var threeFourths = (3/4);\n  alert( roundNumber( threeFourths ));\n});\n```\n\nIt's just a module that happens to register itself.\n\nYou can specify a helper path callback in the config. The callback should be a function that gets a name of a helper as the only argument and returns the full path to be `require()`-d, e.g., the following callback allows for automatic loading of helper modules written in CoffeeScript (via the require-cs plugin) under a non-standard location:\n\n```javascript\nrequire({\n  hbs : {\n    helperPathCallback: function(name) {return 'cs!/helpers/' + name;}\n  }\n}, ['main'])\n```\n\n# Meta Data\n\nAny template that begins with a comment, with _only_ a valid json object in it will be read in as meta data for the template.\n\nI encourage you to list the name of the template and give a description, though these aren't strictly necessary.\n\n## Styles\n\nIf you want to build stylesheets that are comprised of only styles needed by the templates that your app uses, I encourage you to add a `styles` property to the meta info:\n\n```\n{{!\n{\n  \"name\" : \"template1\",\n  \"description\" : \"A nice template.\",\n  \"styles\" : [\"templatecss\"]\n}\n}}\n```\n\nThis will inject a link tag in dev mode to load in this style dynamically. At build time, a screen.build.css is created. At this time it is just a list of import statements. These can be inlined by many existing tools. Eventually I'd love it to just happen.\n\nDe-duping happens automatically, so don't worry if multiple templates require the same styles. The styles are injected in the order that they are read in, so usually from least specific to most specific. This is usually what you want, but know that if you do weird things, it could break.\n\n# Introspection\n\nIn dev mode a few properties are added to your function (an object in javascript) as a helper with debugging and as a testing plug-point.\n\nThose variables look like the following:\n\n```javascript\nrequire(['hbs!template/one'], function ( tmplOne ) {\n  console.log(\n    'Variables referenced in this template: ',                     tmplOne.vars,\n    'Partials/templates that this file directly depends on: ',     tmplOne.deps,\n    'Helpers that this template directly depends on: ',            tmplOne.helpers,\n    'The metadata object at the top of the file (if it exists): ', tmplOne.meta\n  );\n});\n```\n\nNote: All of these go away after a build, as they just take up space with data that is known at build time, which is the ideal time to get stuff figured out (speed-wise).\n\n# Builds\n\nAs long as all of your paths match up, this should precompile all of your templates and include them in the build.\n\n## Before Build\n\n![Before Build](http://i.imgur.com/YSTI3.jpg)\n\n## After Build\n\n![After Build](http://i.imgur.com/JUOlC.jpg)\n\n## So many dependencies in the `hbs` plugin!\n\nI use them for coding happiness. It shouldn't bother you tooooo much, because it all gets built out in production. The `hbs.js` file essentially gets written to the main.js file as a noop (a few empty definitions), and none of it's dependencies are included into the build. All the dependencies are inside the `hbs` folder and this folder should be a sibling of the `hbs.js` file.\n\n# Demo\n\nTo run the demo, go into the root directory of this project and run the following command.\n\n`./build.sh`\n\nThis requires that node.js is installed. To see these in your browser, I'd suggest serving them quickly with the python simple server. (Linux/OSX assumed here, but there is a java implementation of the require.js build that should work just as well as the node version. I have not tried it though.)\n\n```sh\ncd ~/require-handlebars-plugin\npython -m SimpleHTTPServer\n```\n\nYou could also use the node 'serve' module.\n\n```sh\nnpm install serve -g\nserve .\n```\n\nThen visit `http://127.0.0.1:8000/demo.html` for the dev version.\n\nAnd visit `http://127.0.0.1:8000/demo-build.html` for the production build version.\n\nYou should be able to see all of the templates and individual files in your network panel in dev mode, and just 2 minified files in build mode.\n\n# Config\n\nThere are several configurable options, which you can set in your require.config:\n\n```javascript\nrequire.config({\n  // ... other require config here\n\n  // hbs config\n  hbs: {\n    disableI18n: true,        // This disables the i18n helper and\n                              // doesn't require the json i18n files (e.g. en_us.json)\n                              // (false by default)\n\n    disableHelpers: true,     // When true, won't look for and try to automatically load\n                              // helpers (false by default)\n\n    helperPathCallback:       // Callback to determine the path to look for helpers\n      function (name) {       // ('/templates/helpers/'+name by default)\n        return 'cs!' + name;\n      },\n\n    templateExtension: \"html\" // Set the extension automatically appended to templates\n                              // ('hbs' by default)\n\n    compileOptions: {}        // options object which is passed to Handlebars compiler\n  }\n\n})\n```\n\n# Notes/QA\n\n## Partial Collision\n\nThis plugin registers every single template as a partial with it's modified module name and no file extension.\n\n`App/Template/One.handlebars` is registered as `App_Template_One`\n\nI'd encourage you to _not_ call registerPartials in your code, and just use the automatic module registering, that way you definitely won't hit any collisions. You could also just be careful. We're all adults here.\n\n## Templates not loading cross-domain\n\nIn dev mode, loading the templates requires that you are on the same domain as your templates. This is standard same origin policy stuff. Once you build, though, it won't matter since there are no additional requests. Usually a few cleverly placed host overrides get you through the dev mode hurdles.\n\n# Other Templating Languages\n\n_Very_ little of this is specific to handlebars, but things are just a _tiny_ bit too specific about how everything works to properly generalize this.\n\nIf you'd like to implement this for your templating language of choice, you'll need:\n\n* Has a pre-compile type functionality (unless you don't care about builds)\n* If it has some concept of partials, that you can register them externally\n* It eventually returns a function that takes data context and outputs something you can deal with.\n* For any of the meta-data, you'll need some fancy regex or an AST to walk through.\n\nI'd just turn your template language into a module first (just the old global name, or whatever), then look through the references to `Handlebars` in `hbs.js` and see if your templating language does something similar. It's not a terribly complicated process.\n\n# License\n\nMost of the code in this is from James Burke and Yehuda Katz in require.js and handlebars.js (respectively). Those projects are under their own license. Any other code added by me is released under the WTFPL license.\n",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/SlexAxton/require-handlebars-plugin/issues"
+  },
+  "homepage": "https://github.com/SlexAxton/require-handlebars-plugin",
+  "_id": "require-handlebars-plugin@0.8.1",
+  "_from": "require-handlebars-plugin@"
+}

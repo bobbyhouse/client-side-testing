@@ -7,3 +7,6 @@ Install the dependencies.
 
 Run watch to execute the tests when files change.
 `grunt watch`
+
+Run the static content server
+`node server.js`

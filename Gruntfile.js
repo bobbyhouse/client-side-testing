@@ -12,7 +12,13 @@ module.exports = function(grunt) {
                     outfile: '_SpecRunner.html',
                     keepRunner: true,
                     specs: 'spec/**/*.js',
-                    template: require('grunt-template-jasmine-requirejs')
+                    template: require('grunt-template-jasmine-requirejs'),
+                    templateOptions: {
+                        requireConfigFile: 'js/init.js',
+                        requireConfig: {
+                            baseUrl: 'js'
+                        }
+                    }
                 }
             }
         },
